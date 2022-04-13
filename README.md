@@ -10,4 +10,4 @@ Incredibly incomplete.
 * [ ] Better server management tools
 * [ ] Message colors
 * [ ] Members list
-* [ ] Make sure incoming message is not abusing formatting
+* [x] Make sure incoming message is not abusing formatting
