@@ -106,8 +106,9 @@ class Server(QtCore.QThread):
             socket_instance.bind(('', port))
             socket_instance.listen(4)
 
-            ip = urllib.request.urlopen('https://ident.me').read().decode('utf8')
-            self.data.emit(f"Server started on {ip}:{str(port)}")
+            Xip = urllib.request.urlopen('https://ident.me').read().decode('utf8')
+            Iip = socket.gethostbyname(socket.gethostname())
+            self.data.emit(f"Server started on INTERNAL-{Iip} EXTERNAL-{Xip} on PORT-{str(port)}")
             while True:
                 socket_connection, address = socket_instance.accept()
                 connections.append(socket_connection)
@@ -211,7 +212,7 @@ class Ui(QtWidgets.QMainWindow):
     keyPressed = QtCore.pyqtSignal(QtCore.QEvent)
     def __init__(self):
         super(Ui, self).__init__()
-
+    
         # Load UI
         self.fontDB = QtGui.QFontDatabase()
         self.fontDB.addApplicationFont("assets/font.ttf")
@@ -263,6 +264,7 @@ class Ui(QtWidgets.QMainWindow):
 
     def worker_data_callback(self, data):
         self.chat_box.setPlainText(self.chat_box.toPlainText()+data+"\n")
+
         self.chat_box.moveCursor(QtGui.QTextCursor.End)
     def worker_started_callback(self):
         pass
@@ -307,6 +309,7 @@ class Ui(QtWidgets.QMainWindow):
         else:
             self.chat_box.setPlainText(self.chat_box.toPlainText()+"ERROR: Make sure you have a host, port, and username that is valid before attempting to connect\n")
             self.chat_box.moveCursor(QtGui.QTextCursor.End)
+            
 
 
     
@@ -322,9 +325,9 @@ class Ui(QtWidgets.QMainWindow):
             ran_server = True
         
 
-    
+
 
 app = QtWidgets.QApplication(sys.argv)
 window = Ui()
-#app.setStyleSheet(qdarkstyle.load_stylesheet())
+app.setStyleSheet(qdarkstyle.load_stylesheet())
 app.exec_()
