@@ -168,7 +168,7 @@ class ServeUser(QtCore.QThread):
                 # if it fails, there is a chance of socket has died
                 except Exception as e:
                     print('Error broadcasting message: {e}')
-                    remove_connection(client_conn)
+                    self.remove_connection(client_conn)
 
 
     def remove_connection(self, conn: socket.socket) -> None:
