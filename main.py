@@ -12,6 +12,43 @@ import urllib.request
 
 ran_server = False
 
+class Send(QtCore.QThread):
+    global window
+    data = QtCore.pyqtSignal(str)
+
+    def __init__(self, parent=None):
+        super(Send, self).__init__(parent)
+        self._stopped = True
+        self._mutex = QtCore.QMutex()
+
+    def stop(self):
+        self._mutex.lock()
+        self._stopped = True
+        self._mutex.unlock()
+
+    def run(self):
+        global s
+        global username
+        tempusername = window.username_box.text()
+        if tempusername != '' and window.host_box.text() != '' and window.port_box.text() != '':
+            self.data.emit("CLEAR")
+            if "<SEP>" not in tempusername:
+                username = tempusername
+            else:
+                self.data.emit(f"ERROR: Invalid username")
+                return
+            rawmsg = window.input_box.text()
+            date_now = datetime.now().strftime('%Y-%m-%d %H:%M:%S') 
+            message = f"{username}<SEP>{rawmsg}"
+            if len(message.split("<SEP>")) != 2:
+                self.data.emit(f"ERROR: Message formatting incorrect")
+            else:
+                s.send(message.encode())
+                self.data.emit(f"Me: {rawmsg}")
+        else:
+            self.data.emit("CLEAR")
+            self.data.emit("ERROR: No username or server selected")
+
 class Connect(QtCore.QThread):
     global window
     data = QtCore.pyqtSignal(str)
@@ -144,7 +181,6 @@ class ServeUser(QtCore.QThread):
 
     def run(self):
         global connections 
-        print("Serving new user")
         while True:
             try:
                 msg = self.connection.recv(1024)
@@ -154,8 +190,11 @@ class ServeUser(QtCore.QThread):
                 # so in this case, we need to close connection and remove it from connections list.
                 if msg:
                     msg = msg.decode().split("<SEP>")
-                    msg_to_send = f'{msg[0]} ({self.address[0]}) -> {msg[1]}'
-                    self.broadcast(msg_to_send, self.connection)
+                    if len(msg) != 2:
+                        self.data.emit(f"ERROR: Message formatting incorrect - Refusing to broadcast")
+                    else:
+                        msg_to_send = f'{msg[0]} ({self.address[0]}) -> {msg[1]}'
+                        self.broadcast(msg_to_send, self.connection)
 
                 # Close connection if no message was sent
                 else:
@@ -195,10 +234,14 @@ class Ui(QtWidgets.QMainWindow):
         self._connect.started.connect(self.connect_started_callback)
         self._connect.finished.connect(self.connect_finished_callback)
         self._connect.data.connect(self.connect_data_callback)
+
+        self._send = Send()
+        self._send.started.connect(self.send_started_callback)
+        self._send.finished.connect(self.send_finished_callback)
+        self._send.data.connect(self.send_data_callback)
         
         # Load UI
         self.connect_button.clicked.connect(self.connect)
-        self.username_box.textChanged.connect(self.update_username)
         self.keyPressed.connect(self.on_key)
 
         self.server_start_button.clicked.connect(self.start_server)
@@ -215,20 +258,7 @@ class Ui(QtWidgets.QMainWindow):
 
 
     def send_message(self):
-        global username
-        if self.username_box.text() != '' and self.host_box.text() != '' and self.port_box.text() != '':
-            rawmsg = self.input_box.text()
-            self.input_box.setText("")
-            date_now = datetime.now().strftime('%Y-%m-%d %H:%M:%S') 
-            message = f"{username}<SEP>{rawmsg}"
-            s.send(message.encode())
-            self.chat_box.setPlainText(self.chat_box.toPlainText()+f"Me: {rawmsg}\n")
-            self.chat_box.moveCursor(QtGui.QTextCursor.End)
-        else:
-            self.input_box.setText("")
-            self.chat_box.setPlainText(self.chat_box.toPlainText()+"ERROR: No username or server selected\n")
-            self.chat_box.moveCursor(QtGui.QTextCursor.End)
-        
+        self._send.start()
         
 
     def worker_data_callback(self, data):
@@ -238,7 +268,6 @@ class Ui(QtWidgets.QMainWindow):
         pass
     def worker_finished_callback(self):
         pass
-
 
     def server_data_callback(self, data):
         self.server_log_box.setPlainText(self.server_log_box.toPlainText()+data+"\n")
@@ -259,9 +288,17 @@ class Ui(QtWidgets.QMainWindow):
     def connect_finished_callback(self):
         pass
 
-    def update_username(self, name):
-        global username
-        username = name
+    def send_data_callback(self, data):
+        if data == "CLEAR":
+            self.input_box.setText("")
+        else:
+            self.chat_box.setPlainText(self.chat_box.toPlainText()+data+"\n")
+            self.chat_box.moveCursor(QtGui.QTextCursor.End)
+    def send_started_callback(self):
+        pass
+    def send_finished_callback(self):
+        pass
+
 
     def connect(self):
         global s
