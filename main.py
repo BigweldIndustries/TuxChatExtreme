@@ -44,7 +44,7 @@ class Send(QtCore.QThread):
                 self.data.emit(f"ERROR: Message formatting incorrect")
             else:
                 s.send(message.encode())
-                self.data.emit(f"Me: {rawmsg}")
+                self.data.emit(f"Me -> {rawmsg}")
         else:
             self.data.emit("CLEAR")
             self.data.emit("ERROR: No username or server selected")
