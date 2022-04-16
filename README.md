@@ -1,5 +1,5 @@
 # Tux Chat Extreme
-A simple chat client/server program, using sockets.
+A simple chat client/server program, using sockets. May change the name to somthing not as silly in the future.
 Incredibly incomplete.
 
 * [x] Functioning client
