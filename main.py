@@ -14,7 +14,7 @@ import pickle
 import json
 
 ran_server = False
-user_color = random.sample(range(255), 3)
+user_color = random.sample(range(150), 3)
 
 class Send(QtCore.QThread):
     global window
@@ -301,7 +301,7 @@ class Ui(QtWidgets.QMainWindow):
             self.input_box.setText("")
         else:
             old_format = self.chat_box.currentCharFormat()
-            color = QtGui.QColor(user_color)
+            color = QtGui.QColor(*user_color)
             color_format = self.chat_box.currentCharFormat()
 
             color_format.setForeground(color)
