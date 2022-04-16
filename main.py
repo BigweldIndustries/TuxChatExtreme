@@ -296,10 +296,20 @@ class Ui(QtWidgets.QMainWindow):
         pass
 
     def send_data_callback(self, data):
+        global user_color
         if data == "CLEAR":
             self.input_box.setText("")
         else:
+            old_format = self.chat_box.currentCharFormat()
+            color = QtGui.QColor(user_color)
+            color_format = self.chat_box.currentCharFormat()
+
+            color_format.setForeground(color)
+            self.chat_box.setCurrentCharFormat(color_format)
+
             self.chat_box.insertPlainText(data+"\n")
+
+            self.chat_box.setCurrentCharFormat(old_format)
             self.chat_box.moveCursor(QtGui.QTextCursor.End)
     def send_started_callback(self):
         pass
