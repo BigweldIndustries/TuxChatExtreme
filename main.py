@@ -36,13 +36,10 @@ class Send(QtCore.QThread):
             username = tempusername
             rawmsg = window.input_box.text()
             #date_now = datetime.now().strftime('%Y-%m-%d %H:%M:%S') 
-            message = {
-                "username": username,
-                "content": rawmsg
-                }
+            message = {"username": username,"content": rawmsg}
             jsonmessage = json.dumps(message)
             s.send(jsonmessage.encode())
-            self.data.emit(f"Me -> {message["content"]}")
+            self.data.emit(f"Me -> {message['content']}")
         else:
             self.data.emit("CLEAR")
             self.data.emit("ERROR: No username or server selected")
@@ -106,7 +103,7 @@ class Server(QtCore.QThread):
 
             Xip = urllib.request.urlopen('https://ident.me').read().decode('utf8')
             Iip = socket.gethostbyname(socket.gethostname())
-            self.data.emit(f"Server started on INTERNAL-{Iip} EXTERNAL-{Xip} on PORT-{str(port)}")
+            self.data.emit(f"Server started on:\nLocal IP - {Iip}\nExternal IP - {Xip}\nPort - {str(port)}")
             while True:
                 socket_connection, address = socket_instance.accept()
                 connections.append(socket_connection)
@@ -183,7 +180,7 @@ class ServeUser(QtCore.QThread):
         while True:
             try:
                 msg = self.connection.recv(1024)
-                self.data.emit(f"INCOMING PACKET: {msg}")
+                self.data.emit(f"INCOMING PACKET: {msg.decode()}")
                 if msg:
                     msg = msg.decode()
                     msg = json.loads(msg)
