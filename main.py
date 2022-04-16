@@ -9,6 +9,7 @@ import socket
 from datetime import datetime
 import time
 import urllib.request
+import json
 
 ran_server = False
 
@@ -32,19 +33,16 @@ class Send(QtCore.QThread):
         tempusername = window.username_box.text()
         if tempusername != '' and window.host_box.text() != '' and window.port_box.text() != '':
             self.data.emit("CLEAR")
-            if "<SEP>" not in tempusername:
-                username = tempusername
-            else:
-                self.data.emit(f"ERROR: Invalid username")
-                return
+            username = tempusername
             rawmsg = window.input_box.text()
-            date_now = datetime.now().strftime('%Y-%m-%d %H:%M:%S') 
-            message = f"{username}<SEP>{rawmsg}"
-            if len(message.split("<SEP>")) != 2:
-                self.data.emit(f"ERROR: Message formatting incorrect")
-            else:
-                s.send(message.encode())
-                self.data.emit(f"Me -> {rawmsg}")
+            #date_now = datetime.now().strftime('%Y-%m-%d %H:%M:%S') 
+            message = {
+                "username": username,
+                "content": rawmsg
+                }
+            jsonmessage = json.dumps(message)
+            s.send(jsonmessage.encode())
+            self.data.emit(f"Me -> {message["content"]}")
         else:
             self.data.emit("CLEAR")
             self.data.emit("ERROR: No username or server selected")
@@ -186,16 +184,13 @@ class ServeUser(QtCore.QThread):
             try:
                 msg = self.connection.recv(1024)
                 self.data.emit(f"INCOMING PACKET: {msg}")
-
-                # If no message is received, there is a chance that connection has ended
-                # so in this case, we need to close connection and remove it from connections list.
                 if msg:
-                    msg = msg.decode().split("<SEP>")
-                    if len(msg) != 2:
-                        self.data.emit(f"ERROR: Message formatting incorrect - Refusing to broadcast")
-                    else:
-                        msg_to_send = f'{msg[0]} ({self.address[0]}) -> {msg[1]}'
-                        self.broadcast(msg_to_send, self.connection)
+                    msg = msg.decode()
+                    msg = json.loads(msg)
+                    # If no message is received, there is a chance that connection has ended
+                    # so in this case, we need to close connection and remove it from connections list.
+                    msg_to_send = f'{msg["username"]} ({self.address[0]}) -> {msg["content"]}'
+                    self.broadcast(msg_to_send, self.connection)
 
                 # Close connection if no message was sent
                 else:
