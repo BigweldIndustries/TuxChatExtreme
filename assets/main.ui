@@ -152,10 +152,11 @@
            </widget>
           </item>
           <item>
-           <widget class="QPlainTextEdit" name="chat_box">
+           <widget class="QTextEdit" name="chat_box">
             <property name="font">
              <font>
               <family>QDBetterComicSans</family>
+              <pointsize>14</pointsize>
              </font>
             </property>
             <property name="readOnly">

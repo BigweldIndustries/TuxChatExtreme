@@ -8,10 +8,13 @@ import os
 import socket
 from datetime import datetime
 import time
+import random
 import urllib.request
+import pickle
 import json
 
 ran_server = False
+user_color = random.sample(range(255), 3)
 
 class Send(QtCore.QThread):
     global window
@@ -29,6 +32,7 @@ class Send(QtCore.QThread):
 
     def run(self):
         global s
+        global user_color
         global username
         tempusername = window.username_box.text()
         if tempusername != '' and window.host_box.text() != '' and window.port_box.text() != '':
@@ -36,7 +40,7 @@ class Send(QtCore.QThread):
             username = tempusername
             rawmsg = window.input_box.text()
             #date_now = datetime.now().strftime('%Y-%m-%d %H:%M:%S') 
-            message = {"username": username,"content": rawmsg}
+            message = {"username": username,"content": rawmsg, "color": user_color}
             jsonmessage = json.dumps(message)
             s.send(jsonmessage.encode())
             self.data.emit(f"Me -> {message['content']}")
@@ -118,7 +122,7 @@ class Server(QtCore.QThread):
 
 class Mailbox(QtCore.QThread):
     global window
-    data = QtCore.pyqtSignal(str)
+    data = QtCore.pyqtSignal(dict)
 
     def __init__(self, parent=None):
         super(Mailbox, self).__init__(parent)
@@ -135,6 +139,7 @@ class Mailbox(QtCore.QThread):
         global s
         while True:
             message = s.recv(1024).decode()
+            message = json.loads(message)
             self.data.emit(message)
 
 class ServeUser(QtCore.QThread):
@@ -153,17 +158,17 @@ class ServeUser(QtCore.QThread):
         self._stopped = True
         self._mutex.unlock()
 
-    def broadcast(self, message: str, connection: socket.socket) -> None:
+    def broadcast(self, message: dict, connection: socket.socket) -> None:
         global connections 
         for client_conn in connections:
             # Check if isn't the connection of who's send
             if client_conn != connection:
                 try:
-                    client_conn.send(message.encode())
+                    client_conn.send(json.dumps(message).encode())
 
                 # if it fails, there is a chance of socket has died
                 except Exception as e:
-                    print(f'Error broadcasting message: {e}')
+                    self.data.emit(f'Error broadcasting message: {e}')
                     self.remove_connection(client_conn)
 
 
@@ -186,7 +191,7 @@ class ServeUser(QtCore.QThread):
                     msg = json.loads(msg)
                     # If no message is received, there is a chance that connection has ended
                     # so in this case, we need to close connection and remove it from connections list.
-                    msg_to_send = f'{msg["username"]} ({self.address[0]}) -> {msg["content"]}'
+                    msg_to_send = {"content": f'{str(msg["username"])} ({str(self.address[0])}) -> {str(msg["content"])}', "color": msg["color"]}
                     self.broadcast(msg_to_send, self.connection)
 
                 # Close connection if no message was sent
@@ -255,8 +260,16 @@ class Ui(QtWidgets.QMainWindow):
         
 
     def worker_data_callback(self, data):
-        self.chat_box.setPlainText(self.chat_box.toPlainText()+data+"\n")
+        old_format = self.chat_box.currentCharFormat()
+        color = QtGui.QColor(*data["color"])
+        color_format = self.chat_box.currentCharFormat()
 
+        color_format.setForeground(color)
+        self.chat_box.setCurrentCharFormat(color_format)
+
+        self.chat_box.insertPlainText(data["content"]+"\n")
+
+        self.chat_box.setCurrentCharFormat(old_format)
         self.chat_box.moveCursor(QtGui.QTextCursor.End)
     def worker_started_callback(self):
         pass
@@ -275,7 +288,7 @@ class Ui(QtWidgets.QMainWindow):
         pass
     
     def connect_data_callback(self, data):
-        self.chat_box.setPlainText(self.chat_box.toPlainText()+data+"\n")
+        self.chat_box.insertPlainText(data+"\n")
         self.chat_box.moveCursor(QtGui.QTextCursor.End)
     def connect_started_callback(self):
         pass
@@ -286,7 +299,7 @@ class Ui(QtWidgets.QMainWindow):
         if data == "CLEAR":
             self.input_box.setText("")
         else:
-            self.chat_box.setPlainText(self.chat_box.toPlainText()+data+"\n")
+            self.chat_box.insertPlainText(data+"\n")
             self.chat_box.moveCursor(QtGui.QTextCursor.End)
     def send_started_callback(self):
         pass
@@ -299,7 +312,7 @@ class Ui(QtWidgets.QMainWindow):
         if self.username_box.text() != '' and self.host_box.text() != '' and self.port_box.text() != '':
             self._connect.start()
         else:
-            self.chat_box.setPlainText(self.chat_box.toPlainText()+"ERROR: Make sure you have a host, port, and username that is valid before attempting to connect\n")
+            self.chat_box.insertPlainText("ERROR: Make sure you have a host, port, and username that is valid before attempting to connect\n")
             self.chat_box.moveCursor(QtGui.QTextCursor.End)
             
 
@@ -321,5 +334,5 @@ class Ui(QtWidgets.QMainWindow):
 
 app = QtWidgets.QApplication(sys.argv)
 window = Ui()
-app.setStyleSheet(qdarkstyle.load_stylesheet())
+#app.setStyleSheet(qdarkstyle.load_stylesheet())
 app.exec_()
