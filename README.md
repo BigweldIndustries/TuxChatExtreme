@@ -10,6 +10,7 @@ Incredibly incomplete.
 * [ ] Better server management tools
 * [x] Message colors
 * [ ] Members list
+* [ ] Join/Leave messages
 * [x] Make sure incoming message is not abusing formatting
 
 # Issues we are aware of
