@@ -14,4 +14,4 @@ Incredibly incomplete.
 
 # Issues we are aware of
 - JSON Crash Error when sending a message
-~~- Sometimes colors make text unreadable~~
+- ~~Sometimes colors make text unreadable~~
