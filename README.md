@@ -11,3 +11,7 @@ Incredibly incomplete.
 * [x] Message colors
 * [ ] Members list
 * [x] Make sure incoming message is not abusing formatting
+
+# Issues we are aware of
+- JSON Crash Error when sending a message
+- Sometimes colors make text unreadable
