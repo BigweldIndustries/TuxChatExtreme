@@ -8,6 +8,6 @@ Incredibly incomplete.
 * [ ] Local network discovery
 * [ ] Encryption
 * [ ] Better server management tools
-* [ ] Message colors
+* [x] Message colors
 * [ ] Members list
 * [x] Make sure incoming message is not abusing formatting
