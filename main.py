@@ -24,17 +24,19 @@ Iip = socket.gethostbyname(socket.gethostname())
 print(f"Server started on:\nLocal IP - {Iip}\nExternal IP - {Xip}\nPort - {str(SERVERPORT)}")
 
 
-def listen_for_client(cs):
+def listen_for_client(cs,Address):
     while True:
         try:
             msg = json.loads(cs.recv(1024).decode())
+            print(msg)
         except Exception as e:
             print(f"[!] Error: {e}")
             client_sockets.remove(cs)
 
         for client_socket in client_sockets:
+            print('SOCKS',client_socket)
             if cs != client_socket:
-                client_socket.send(json.dumps({"content": f'{str(msg["username"])} {str(msg["address"])} -> {str(msg["content"])}', "color": msg["color"]}).encode())
+                client_socket.send(json.dumps({"content": f'{str(msg["username"])} ({str(Address[0])}) -> {str(msg["content"])}', "color": msg["color"]}).encode())
         NAME = msg['username']
         print(f'RECIVED PACKET {msg} FROM {NAME}')
 
@@ -42,7 +44,7 @@ while True:
     ClientSocket, ClientAddress = s.accept()
     print(f"[+] {ClientAddress} connected.")
     client_sockets.add(ClientSocket)
-    t = Thread(target=listen_for_client, args=(ClientSocket,))
+    t = Thread(target=listen_for_client, args=(ClientSocket,ClientAddress,))
     t.daemon = True
     t.start()
 
