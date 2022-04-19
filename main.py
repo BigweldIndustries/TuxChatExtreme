@@ -26,6 +26,7 @@ print(f"Server started on:\nLocal IP - {Iip}\nExternal IP - {Xip}\nPort - {str(S
 
 def listen_for_client(cs,Address):
     while True:
+        msg = None
         try:
             msg = json.loads(cs.recv(1024).decode())
             print(msg)
