@@ -344,5 +344,10 @@ class Ui(QtWidgets.QMainWindow):
 
 app = QtWidgets.QApplication(sys.argv)
 window = Ui()
-#app.setStyleSheet(qdarkstyle.load_stylesheet())
+if os.name == 'nt':
+    app.setStyleSheet(qdarkstyle.load_stylesheet())
+elif os.name == 'posix':
+    pass
+else:
+    print(f'{os.name} NOT RECOGNIZED, DEFAULTING TO STANDARD STYLESHEET')
 app.exec_()
