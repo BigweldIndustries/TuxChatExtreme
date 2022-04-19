@@ -40,7 +40,7 @@ class Send(QtCore.QThread):
             username = tempusername
             rawmsg = window.input_box.text()
             #date_now = datetime.now().strftime('%Y-%m-%d %H:%M:%S') 
-            message = {"username": username,"content": rawmsg, "color": user_color}
+            message = {"username": username,"content": rawmsg, "color": user_color, "address":socket.gethostbyname(socket.gethostname())}
             jsonmessage = json.dumps(message)
             s.send(jsonmessage.encode())
             self.data.emit(f"Me -> {message['content']}")
