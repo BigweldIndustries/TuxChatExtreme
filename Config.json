@@ -1,0 +1,8 @@
+[
+    {
+        "BindAddress" : "0.0.0.0",
+        "Port" : 2725,
+        "MaxConnections" : 10,
+        "ServerName" : "TuxChatExtremeServer"
+    }
+]
