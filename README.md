@@ -8,8 +8,6 @@ Incredibly incomplete.
 * [ ] Add server name functionality
 * [ ] Local network discovery
 * [ ] Encryption
-* [ ] Better server management tools
-* [x] Message colors
 * [ ] Members list
 * [ ] Join/Leave messages
 

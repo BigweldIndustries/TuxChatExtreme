@@ -27,15 +27,16 @@ print(f"Server started on:\nLocal IP - {Iip}\nExternal IP - {Xip}\nPort - {str(S
 def listen_for_client(cs):
     while True:
         try:
-            msg = cs.recv(1024).decode()
+            msg = json.loads(cs.recv(1024).decode())
         except Exception as e:
             print(f"[!] Error: {e}")
             client_sockets.remove(cs)
-        
+
         for client_socket in client_sockets:
-            client_socket.send(msg.encode())
-            NAME = json.loads(msg)['username']
-            print(f'RECIVED PACKET {msg} FROM {NAME}')
+            if cs != client_socket:
+                client_socket.send(json.dumps({"content": f'{str(msg["username"])} {str(msg["address"])} -> {str(msg["content"])}', "color": msg["color"]}).encode())
+        NAME = msg['username']
+        print(f'RECIVED PACKET {msg} FROM {NAME}')
 
 while True:
     ClientSocket, ClientAddress = s.accept()
@@ -45,8 +46,7 @@ while True:
     t.daemon = True
     t.start()
 
-# close client sockets
 for cs in client_sockets:
     cs.close()
-# close server socket
+
 s.close()
