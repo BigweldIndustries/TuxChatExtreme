@@ -34,7 +34,7 @@ def listen_for_client(cs,Address):
         except Exception as e:
             print(f"[!] Error: {e}")
             client_sockets.remove(cs)
-            print(f"[-] {Address[0]}-{NAME} disconnected.")
+            print(f"[-] {Address[0]} disconnected.")
 
         for client_socket in client_sockets:
             if cs != client_socket:
