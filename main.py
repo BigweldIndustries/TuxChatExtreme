@@ -27,18 +27,19 @@ print(f"Server started on:\nLocal IP - {Iip}\nExternal IP - {Xip}\nPort - {str(S
 def listen_for_client(cs,Address):
     while True:
         msg = None
+        NAME = None
         try:
             msg = json.loads(cs.recv(1024).decode())
-            print(msg)
+            NAME = msg['username']
         except Exception as e:
             print(f"[!] Error: {e}")
             client_sockets.remove(cs)
+            print(f"[-] {Address[0]}-{NAME} disconnected.")
 
         for client_socket in client_sockets:
-            print('SOCKS',client_socket)
             if cs != client_socket:
                 client_socket.send(json.dumps({"content": f'{str(msg["username"])} ({str(Address[0])}) -> {str(msg["content"])}', "color": msg["color"]}).encode())
-        NAME = msg['username']
+        
         print(f'RECIVED PACKET {msg} FROM {NAME}')
 
 while True:
