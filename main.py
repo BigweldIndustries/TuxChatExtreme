@@ -16,6 +16,7 @@ import json
 ran_server = False
 user_color = random.sample(range(150), 3)
 
+
 class Send(QtCore.QThread):
     global window
     data = QtCore.pyqtSignal(str)
@@ -115,6 +116,7 @@ class Server(QtCore.QThread):
                 tempthread = getattr(self, f"t{str(con_thread_num)}")
                 tempthread.data.connect(self.request_data)
                 tempthread.start()
+                tempthread.broadcast({"content": f"User {str(address[0])} joined", "color":[0,0,0]}, tempthread.connection)
                 con_thread_num += 1
         except Exception as e:
             self.data.emit(f"ERROR: {e}")
@@ -176,9 +178,15 @@ class ServeUser(QtCore.QThread):
         global connections 
         # Check if connection exists on connections list
         if conn in connections:
+            self.broadcast({"content": f"User {str(self.address[0])} left", "color":[0,0,0]}, self.connection)
             # Close socket connection and remove connection from connections list
-            conn.close()
-            connections.remove(conn)
+            try:
+                conn.close()
+                connections.remove(conn)
+            except:
+                self.broadcast({"content": f"User {str(self.address[0])} failed to leave", "color":[255,0,0]}, self.connection)
+                self.data.emit(f"ERROR: Could not close connection for {str(self.address[0])}")
+
 
     def run(self):
         global connections 
@@ -237,12 +245,14 @@ class Ui(QtWidgets.QMainWindow):
         self._send.started.connect(self.send_started_callback)
         self._send.finished.connect(self.send_finished_callback)
         self._send.data.connect(self.send_data_callback)
-        
+
+
         # Load UI
         self.connect_button.clicked.connect(self.connect)
         self.keyPressed.connect(self.on_key)
 
         self.server_start_button.clicked.connect(self.start_server)
+
 
     
     def keyPressEvent(self, event):
@@ -349,5 +359,11 @@ if os.name == 'nt':
 elif os.name == 'posix':
     pass
 else:
-    print(f'{os.name} NOT RECOGNIZED, DEFAULTING TO STANDARD STYLESHEET')
+    (f'{os.name} NOT RECOGNIZED, DEFAULTING TO STANDARD STYLESHEET')
+<<<<<<< HEAD
 app.exec_()
+=======
+app.exec_()
+>>>>>>> 052ca0b4d40d31a41685c5394a4f0cd3b3fc77ad
+
+
