@@ -336,9 +336,6 @@ class Ui(QtWidgets.QMainWindow):
             self.chat_box.moveCursor(QtGui.QTextCursor.End)
             
 
-
-    
-
     def start_server(self):
         global ran_server
         if ran_server:
@@ -354,16 +351,6 @@ class Ui(QtWidgets.QMainWindow):
 
 app = QtWidgets.QApplication(sys.argv)
 window = Ui()
-if os.name == 'nt':
-    app.setStyleSheet(qdarkstyle.load_stylesheet())
-elif os.name == 'posix':
-    pass
-else:
-    (f'{os.name} NOT RECOGNIZED, DEFAULTING TO STANDARD STYLESHEET')
-<<<<<<< HEAD
-app.exec_()
-=======
-app.exec_()
->>>>>>> 052ca0b4d40d31a41685c5394a4f0cd3b3fc77ad
 
+app.exec_()
 
